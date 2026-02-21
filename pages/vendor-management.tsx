@@ -57,7 +57,7 @@ export default function VendorManagement() {
       setEditingId(vendor.id);
       setFormData({
         vendor_id: vendor.vendor_id,
-        name: vendor.vendor_name,
+        name: vendor.name,
         email: vendor.email,
         phone: vendor.phone,
         address: vendor.address,
