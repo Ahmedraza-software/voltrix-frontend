@@ -1,4 +1,4 @@
-import { Container, Typography, Card, CardContent, Button, Box, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Stack, MenuItem, useMediaQuery, useTheme } from '@mui/material';
+import { Container, Typography, Card, CardContent, Button, Box, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Stack, MenuItem, useMediaQuery, useTheme, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { Edit, Delete, Add } from '@mui/icons-material';
 import Layout from '@/components/Layout';
 import Breadcrumb from '@/components/Breadcrumb';
@@ -22,6 +22,8 @@ export default function VendorManagement() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     vendor_id: '',
     name: '',
@@ -98,10 +100,17 @@ export default function VendorManagement() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this vendor?')) {
+    setDeleteTargetId(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTargetId) {
       try {
-        await api.delete(`/api/vendors/${id}`);
+        await api.delete(`/api/vendors/${deleteTargetId}`);
         fetchVendors();
+        setDeleteConfirmOpen(false);
+        setDeleteTargetId(null);
       } catch (error) {
         console.error('Error deleting vendor:', error);
       }
@@ -243,6 +252,17 @@ export default function VendorManagement() {
             />
           </Stack>
         </FormDrawer>
+
+        <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)} maxWidth="xs" fullWidth>
+          <DialogTitle sx={{ fontWeight: 600, color: '#d32f2f' }}>Delete Vendor</DialogTitle>
+          <DialogContent sx={{ pt: 2 }}>
+            <Typography>Are you sure you want to delete this vendor? This action cannot be undone.</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+            <Button onClick={confirmDelete} variant="contained" color="error">Delete</Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </Layout>
   );

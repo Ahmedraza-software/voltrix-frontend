@@ -43,6 +43,8 @@ export default function PurchaseOrders() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     vendor_id: '',
     items: [] as PurchaseOrderItem[],
@@ -187,10 +189,17 @@ export default function PurchaseOrders() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this purchase order?')) {
+    setDeleteTargetId(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTargetId) {
       try {
-        await api.delete(`/api/purchase-orders/${id}`);
+        await api.delete(`/api/purchase-orders/${deleteTargetId}`);
         fetchPurchaseOrders();
+        setDeleteConfirmOpen(false);
+        setDeleteTargetId(null);
       } catch (error) {
         console.error('Error deleting purchase order:', error);
       }
@@ -637,6 +646,18 @@ export default function PurchaseOrders() {
             <Button onClick={handleDownloadPDF} variant="contained" startIcon={<Download />}>
               Download PDF
             </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)} maxWidth="xs" fullWidth>
+          <DialogTitle sx={{ fontWeight: 600, color: '#d32f2f' }}>Delete Purchase Order</DialogTitle>
+          <DialogContent sx={{ pt: 2 }}>
+            <Typography>Are you sure you want to delete this purchase order? This action cannot be undone.</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+            <Button onClick={confirmDelete} variant="contained" color="error">Delete</Button>
           </DialogActions>
         </Dialog>
       </Container>

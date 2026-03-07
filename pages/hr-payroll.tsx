@@ -1,4 +1,4 @@
-import { Container, Typography, Card, CardContent, Button, Box, Grid, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Stack, MenuItem } from '@mui/material';
+import { Container, Typography, Card, CardContent, Button, Box, Grid, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Stack, MenuItem, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { Edit, Delete, Add } from '@mui/icons-material';
 import Layout from '@/components/Layout';
 import Breadcrumb from '@/components/Breadcrumb';
@@ -24,6 +24,8 @@ export default function HRPayroll() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     emp_id: '',
     first_name: '',
@@ -108,10 +110,17 @@ export default function HRPayroll() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this employee?')) {
+    setDeleteTargetId(id);
+    setDeleteConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteTargetId) {
       try {
-        await api.delete(`/api/employees/${id}`);
+        await api.delete(`/api/employees/${deleteTargetId}`);
         fetchEmployees();
+        setDeleteConfirmOpen(false);
+        setDeleteTargetId(null);
       } catch (error) {
         console.error('Error deleting employee:', error);
       }
@@ -294,6 +303,18 @@ export default function HRPayroll() {
             </TextField>
           </Stack>
         </FormDrawer>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)} maxWidth="xs" fullWidth>
+          <DialogTitle sx={{ fontWeight: 600, color: '#d32f2f' }}>Delete Employee</DialogTitle>
+          <DialogContent sx={{ pt: 2 }}>
+            <Typography>Are you sure you want to delete this employee? This action cannot be undone.</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+            <Button onClick={confirmDelete} variant="contained" color="error">Delete</Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </Layout>
   );
